@@ -29,7 +29,7 @@ impl Dictionary {
         let word = self.words.get(idx);
 
         if word.is_some() {
-            return String::from(word.unwrap())
+            return word.unwrap().to_string()
         }
 
         return String::from("");
