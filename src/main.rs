@@ -1,7 +1,7 @@
 mod board;
 mod dictionary;
 
-use clap::Arg;
+use std::cmp::max;
 use crate::board::Board;
 use crate::dictionary::Dictionary;
 
@@ -34,7 +34,9 @@ fn main() {
 
     let mut board: Board = Board::new(rows, cols, message);
 
-    let mut dictionary: Dictionary = Dictionary::from_file("./res/en.dr".to_string(), 10);
+    let mut dictionary: Dictionary = Dictionary::from_file("./res/en.dr".to_string(), max(rows, cols));
 
-    println!();
+    let word_fits = board.word_fits_board(dictionary.get_word_at(0));
+
+    println!("word fits {}", word_fits);
 }

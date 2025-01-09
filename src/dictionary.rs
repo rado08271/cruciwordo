@@ -24,4 +24,14 @@ impl Dictionary {
                 .cloned().collect()
         }
     }
+
+    pub fn get_word_at(&self, idx: usize) -> String {
+        let word = self.words.get(idx);
+
+        if word.is_some() {
+            return String::from(word.unwrap())
+        }
+
+        return String::from("");
+    }
 }
