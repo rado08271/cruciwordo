@@ -1,6 +1,6 @@
 use std::slice::IterMut;
 use rand::prelude::SliceRandom;
-use rand::thread_rng;
+use rand::{Rng, thread_rng};
 
 const MIN_WORD_LENGTH: usize = 3;
 
@@ -27,5 +27,16 @@ impl Dictionary {
 
     pub fn iterate(&mut self) -> IterMut<'_, String> {
         return self.words.iter_mut()
+    }
+
+    pub fn get_random_word(&mut self) -> String {
+        let mut word: Option<&String> = None;
+
+        while word.is_none() {
+            let rnd_idx = thread_rng().gen_range(0, self.words.len());
+            word = self.words.get(rnd_idx);
+        }
+
+        return word.unwrap().to_string();
     }
 }

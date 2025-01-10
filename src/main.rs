@@ -2,7 +2,7 @@ mod board;
 mod dictionary;
 
 use std::cmp::max;
-use crate::board::Board;
+use crate::board::{Board, Placement};
 use crate::dictionary::Dictionary;
 
 fn main() {
@@ -13,16 +13,11 @@ fn main() {
     let mut board: Board = Board::new(rows, cols, message);
     let mut dictionary: Dictionary = Dictionary::from_file("./res/en.dr".to_string(), max(rows, cols));
 
-    for word in dictionary.iterate() {
-        board.place_word_on_board(word.clone());
-
-        if board.is_filled() {
-            board.print();
-            println!("🏆 Board is now ready");
-            return;
-        }
+    while !board.is_filled() {
+        let random_word = dictionary.get_random_word();
+        board.place_word_on_board(random_word);
     }
 
     board.print();
-    println!("😭 Better luck next time!");
+    println!("🏆 Board is now ready");
 }
