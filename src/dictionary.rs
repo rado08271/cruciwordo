@@ -13,7 +13,6 @@ impl Dictionary {
         let items: Vec<String> = std::fs::read_to_string(file_path)
             .unwrap()  // panic on possible file-reading errors
             .lines()  // split the string into an iterator of string slices
-            .map(|word| word.split("\t").nth(0).unwrap())
             .map(String::from)  // make each slice into a string
             .filter(|s| s.len() >= MIN_WORD_LENGTH && s.len() <= max_word_length)
             .map(|s| s.to_uppercase())
