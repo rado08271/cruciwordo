@@ -28,26 +28,31 @@ fn main() {
         - If word was not put on board (no more suitable available words)
      */
 
-    let rows = 5;
-    let cols = 4;
+    let rows = 30;
+    let cols = 30;
     let message = "This is long?".to_string();
 
     let mut board: Board = Board::new(rows, cols, message);
 
     let mut dictionary: Dictionary = Dictionary::from_file("./res/en.dr".to_string(), max(rows, cols));
-    let word = dictionary.get_word_at(0);
 
-    let (row, col) = board.get_random_cell();
-    let direction = board.get_random_direction_from_cell(row, col, word.len());
+    for word in dictionary.iterate() {
+        let (row, col) = board.get_random_cell();
+        let direction = board.get_random_direction_from_cell(row, col, word.len());
 
-    if direction.is_some() {
-        let can_be_placed = board.word_fits_board(row, col, direction.unwrap(), word.clone());
+        if direction.is_some() {
+            let can_be_placed = board.word_fits_board(row, col, direction.unwrap(), word.clone());
 
-        if can_be_placed {
-            println!("✅ Word {} will fit on board at r{}c{} in direction [{};{}]", word, row, col, direction.unwrap().y_dir, direction.unwrap().x_dir);
-            board.place_word_on_board(row, col, direction.unwrap(), word.clone());
-        } else {
-            println!("❌ Word {} will not fit on board at r{}c{} in direction [{};{}]", word, row, col, direction.unwrap().y_dir, direction.unwrap().x_dir);
+            if can_be_placed {
+                println!("✅ Word {} will fit on board at r{}c{} in direction [{};{}]", word, row, col, direction.unwrap().y_dir, direction.unwrap().x_dir);
+                board.place_word_on_board(row, col, direction.unwrap(), word.clone());
+            } else {
+                println!("❌ Word {} will not fit on board at r{}c{} in direction [{};{}]", word, row, col, direction.unwrap().y_dir, direction.unwrap().x_dir);
+            }
+
+            if board.is_filled() {
+                break;
+            }
         }
     }
 

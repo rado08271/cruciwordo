@@ -39,6 +39,20 @@ impl Board {
         }
     }
 
+    pub fn is_filled(&self) -> bool {
+        let mut items: usize = 0;
+
+        for r in 0..self.rows {
+            for c in 0..self.cols {
+                if self.grid[r][c] == '?' {
+                    items += 1;
+                }
+            }
+        }
+
+        return items == self.solution.len();
+    }
+
     pub fn has_enough_empty_cells(&self) -> bool {
         let mut items: usize = 0;
         for r in 0..self.rows {
@@ -76,6 +90,8 @@ impl Board {
 
             self.grid[row_depth][col_depth] = curr_char;
         }
+
+        self.words.insert(word);
     }
 
     pub fn word_fits_board(&self, row: usize, col: usize, direction: Direction, word: String) -> bool {
@@ -167,5 +183,8 @@ impl Board {
             }
             println!();
         }
+
+        self.words.iter().for_each(|w| println!("\t{}", w));
+        println!("S: {}", self.solution);
     }
 }

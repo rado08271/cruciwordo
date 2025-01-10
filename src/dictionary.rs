@@ -1,3 +1,4 @@
+use std::slice::IterMut;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
@@ -25,13 +26,7 @@ impl Dictionary {
         }
     }
 
-    pub fn get_word_at(&self, idx: usize) -> String {
-        let word = self.words.get(idx);
-
-        if word.is_some() {
-            return word.unwrap().to_string()
-        }
-
-        return String::from("");
+    pub fn iterate(&mut self) -> IterMut<'_, String> {
+        return self.words.iter_mut()
     }
 }
