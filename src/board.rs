@@ -67,70 +67,23 @@ impl Board {
         return items;
     }
 
-    pub fn place_word_on_board(&mut self, row: usize, col: usize, direction: Direction, word: String) {
-        for curr_depth in 0..word.len() {
-            let curr_char = word.chars().nth(curr_depth).unwrap_or(' ');
+    pub fn place_word_on_board(&mut self, word: String) {
+        let (row, col) = self.get_random_cell();
+        let direction = self.word_fits_board_direction(row, col, word.clone());
 
-            let irow_depth: isize = (row as isize + (direction.y_dir * curr_depth as isize));
-            let icol_depth: isize = (col as isize + (direction.x_dir * curr_depth as isize));
+        if direction.is_some() {
+            for (curr_depth, curr_char) in word.chars().enumerate() {
+                let irow_depth: isize = (row as isize + (direction.unwrap().y_dir * curr_depth as isize));
+                let icol_depth: isize = (col as isize + (direction.unwrap().x_dir * curr_depth as isize));
 
-            if irow_depth < 0 || icol_depth < 0 {
-                return;
+                self.grid[irow_depth as usize][icol_depth as usize] = curr_char;
             }
 
-            let row_depth: usize = irow_depth as usize;
-            let col_depth: usize = icol_depth as usize;
-
-            if row_depth >= self.rows || col_depth >= self.cols {
-                return;
-            }
-
-            self.grid[row_depth][col_depth] = curr_char;
+            self.words.insert(word.clone());
         }
-
-        self.words.insert(word);
     }
 
-    pub fn word_fits_board(&self, row: usize, col: usize, direction: Direction, word: String) -> bool {
-        let mut non_filled_cells: usize = 0;
-        for curr_depth in 0..word.len() {
-            let curr_char = word.chars().nth(curr_depth).unwrap_or(' ');
-
-            let irow_depth: isize = (row as isize + (direction.y_dir * curr_depth as isize));
-            let icol_depth: isize = (col as isize + (direction.x_dir * curr_depth as isize));
-
-            if irow_depth < 0 || icol_depth < 0 {
-                return false;
-            }
-
-            let row_depth: usize = irow_depth as usize;
-            let col_depth: usize = icol_depth as usize;
-
-            if row_depth >= self.rows || col_depth >= self.cols {
-                return false;
-            }
-
-            let cell_char = self.grid[row_depth][col_depth];
-
-            if cell_char != '?' && curr_char != cell_char {
-                return false
-            }
-
-            if cell_char == '?' {
-                non_filled_cells += 1;
-            }
-
-        }
-
-        if (self.solution.len() + non_filled_cells) > self.get_empty_cells() {
-            return false;
-        }
-
-        return true;
-
-    }
-
-    pub fn get_random_cell(&self) -> (usize, usize) {
+    fn get_random_cell(&self) -> (usize, usize) {
         // make it start at random
         let mut row = thread_rng().gen_range(0, self.rows);
         let mut col = thread_rng().gen_range(0, self.cols);
@@ -147,14 +100,23 @@ impl Board {
         (row, col)
     }
 
-    pub fn get_random_direction_from_cell(&self, row: usize, col: usize, depth: usize) -> Option<Direction> {
+    fn word_fits_board_direction(&self, row: usize, col: usize, word: String) -> Option<Direction> {
+        if self.words.contains(&word) {
+            return None
+        }
+
+        // if (row + word.len() > self.rows) || (col + word.len() > self.cols) {
+        //     return None;
+        // }
+
         let random_directions: Vec<Direction> = DIRECTIONS
             .choose_multiple(&mut thread_rng(), DIRECTIONS.len())
             .map(|d| *d)
             .collect();
 
         for direction in random_directions {
-            for curr_depth in 0..depth {
+            let mut non_filled_cells: usize = 0;
+            for (curr_depth, curr_char) in word.chars().enumerate() {
                 let irow_depth: isize = (row as isize + (direction.y_dir * curr_depth as isize));
                 let icol_depth: isize = (col as isize + (direction.x_dir * curr_depth as isize));
 
@@ -168,7 +130,22 @@ impl Board {
                 if row_depth >= self.rows || col_depth >= self.cols {
                     break;
                 }
-                if curr_depth == depth - 1 {
+
+                let cell_char = self.grid[row_depth][col_depth];
+
+                if cell_char != '?' && curr_char != cell_char {
+                    break;
+                }
+
+                if cell_char == '?' {
+                    non_filled_cells += 1;
+                }
+
+                if curr_depth == word.len() - 1 {
+                    if (self.solution.len() + non_filled_cells) > self.get_empty_cells() {
+                        break;
+                    }
+
                     return Some(direction);
                 }
             }
