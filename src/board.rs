@@ -4,19 +4,20 @@ use rand::{Rng, thread_rng};
 
 #[derive(Clone, Copy)]
 pub struct Direction {
-    pub(crate) x_dir: isize,
-    pub(crate) y_dir: isize
+    pub x_dir: isize,
+    pub y_dir: isize,
+    pub(crate) dbg_name: &'static str
 }
 
 const DIRECTIONS: [Direction; 8] = [
-    Direction {y_dir: -1, x_dir: -1},   // NW
-    Direction {y_dir: -1, x_dir:  0},   // N
-    Direction {y_dir: -1, x_dir:  1},   // NE
-    Direction {y_dir:  0, x_dir: -1},   // W
-    Direction {y_dir:  0, x_dir:  1},   // E
-    Direction {y_dir:  1, x_dir: -1},   // SW
-    Direction {y_dir:  1, x_dir:  0},   // S
-    Direction {y_dir:  1, x_dir:  1},   // SE
+    Direction {y_dir: -1, x_dir: -1, dbg_name: "NW"},   // NW
+    Direction {y_dir: -1, x_dir:  0, dbg_name: "N" },   // N
+    Direction {y_dir: -1, x_dir:  1, dbg_name: "NE"},   // NE
+    Direction {y_dir:  0, x_dir: -1, dbg_name: "W" },   // W
+    Direction {y_dir:  0, x_dir:  1, dbg_name: "E" },   // E
+    Direction {y_dir:  1, x_dir: -1, dbg_name: "SW"},   // SW
+    Direction {y_dir:  1, x_dir:  0, dbg_name: "S" },   // S
+    Direction {y_dir:  1, x_dir:  1, dbg_name: "SE"},   // SE
 ];
 
 pub struct Board {
@@ -53,21 +54,17 @@ impl Board {
         return items == self.solution.len();
     }
 
-    pub fn has_enough_empty_cells(&self) -> bool {
+    pub fn get_empty_cells(&self) -> usize {
         let mut items: usize = 0;
         for r in 0..self.rows {
             for c in 0..self.cols {
                 if self.grid[r][c] == '?' {
                     items += 1;
                 }
-
-                if items >= self.solution.len() {
-                    return true;
-                }
             }
         }
 
-        return false;
+        return items;
     }
 
     pub fn place_word_on_board(&mut self, row: usize, col: usize, direction: Direction, word: String) {
@@ -95,6 +92,7 @@ impl Board {
     }
 
     pub fn word_fits_board(&self, row: usize, col: usize, direction: Direction, word: String) -> bool {
+        let mut non_filled_cells: usize = 0;
         for curr_depth in 0..word.len() {
             let curr_char = word.chars().nth(curr_depth).unwrap_or(' ');
 
@@ -112,17 +110,20 @@ impl Board {
                 return false;
             }
 
-
             let cell_char = self.grid[row_depth][col_depth];
 
             if cell_char != '?' && curr_char != cell_char {
                 return false
             }
 
-            if !self.has_enough_empty_cells() {
-                return false;
+            if cell_char == '?' {
+                non_filled_cells += 1;
             }
 
+        }
+
+        if (self.solution.len() + non_filled_cells) > self.get_empty_cells() {
+            return false;
         }
 
         return true;
@@ -167,9 +168,10 @@ impl Board {
                 if row_depth >= self.rows || col_depth >= self.cols {
                     break;
                 }
-
+                if curr_depth == depth - 1 {
+                    return Some(direction);
+                }
             }
-            return Some(direction);
         }
 
         return None;
