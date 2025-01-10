@@ -2,6 +2,14 @@ use std::collections::HashSet;
 use rand::prelude::SliceRandom;
 use rand::{Rng, thread_rng};
 
+pub struct Placement {
+    direction: Direction,
+    row: usize,
+    col: usize,
+    word: String,
+    step: usize
+}
+
 #[derive(Clone, Copy)]
 pub struct Direction {
     pub x_dir: isize,
@@ -67,7 +75,7 @@ impl Board {
         return items;
     }
 
-    pub fn place_word_on_board(&mut self, word: String) {
+    pub fn place_word_on_board(&mut self, word: String) -> Option<Placement> {
         let (row, col) = self.get_random_cell();
         let direction = self.word_fits_board_direction(row, col, word.clone());
 
@@ -80,7 +88,13 @@ impl Board {
             }
 
             self.words.insert(word.clone());
+
+            return Some( Placement {
+                word, row, col, direction: direction.unwrap(), step: self.words.len()
+            });
         }
+
+        return None;
     }
 
     fn get_random_cell(&self) -> (usize, usize) {
