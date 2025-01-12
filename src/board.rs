@@ -3,18 +3,18 @@ use rand::prelude::SliceRandom;
 use rand::{Rng, thread_rng};
 
 pub struct Placement {
-    direction: Direction,
-    row: usize,
-    col: usize,
-    word: String,
-    step: usize
+    pub direction: &'static str,
+    pub row: usize,
+    pub col: usize,
+    pub word: String,
+    pub step: usize
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 pub struct Direction {
-    pub x_dir: isize,
-    pub y_dir: isize,
-    pub(crate) dbg_name: &'static str
+    x_dir: isize,
+    y_dir: isize,
+    pub dbg_name: &'static str
 }
 
 const DIRECTIONS: [Direction; 8] = [
@@ -77,12 +77,14 @@ impl Board {
 
     pub fn place_word_on_board(&mut self, word: String) -> Option<Placement> {
         let (row, col) = self.get_random_cell();
-        let direction = self.word_fits_board_direction(row, col, word.clone());
+        let o_direction = self.word_fits_board_direction(row, col, word.clone());
 
-        if direction.is_some() {
+        if o_direction.is_some() {
+            let direction = o_direction.unwrap();
+
             for (curr_depth, curr_char) in word.chars().enumerate() {
-                let irow_depth: isize = (row as isize + (direction.unwrap().y_dir * curr_depth as isize));
-                let icol_depth: isize = (col as isize + (direction.unwrap().x_dir * curr_depth as isize));
+                let irow_depth: isize = (row as isize + (direction.y_dir * curr_depth as isize));
+                let icol_depth: isize = (col as isize + (direction.x_dir * curr_depth as isize));
 
                 self.grid[irow_depth as usize][icol_depth as usize] = curr_char;
             }
@@ -90,7 +92,7 @@ impl Board {
             self.words.insert(word.clone());
 
             return Some( Placement {
-                word, row, col, direction: direction.unwrap(), step: self.words.len()
+                word, row, col, direction: direction.dbg_name, step: self.words.len()
             });
         }
 
@@ -125,7 +127,7 @@ impl Board {
 
         let random_directions: Vec<Direction> = DIRECTIONS
             .choose_multiple(&mut thread_rng(), DIRECTIONS.len())
-            .map(|d| *d)
+            .map(|&d|d)
             .collect();
 
         for direction in random_directions {
@@ -176,8 +178,5 @@ impl Board {
             }
             println!();
         }
-
-        self.words.iter().for_each(|w| println!("\t{}", w));
-        println!("S: {}", self.solution);
     }
 }
