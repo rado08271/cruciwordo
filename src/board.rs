@@ -1,7 +1,9 @@
 use std::collections::HashSet;
 use rand::prelude::SliceRandom;
 use rand::{Rng, thread_rng};
+use serde::Serialize;
 
+#[derive(Serialize)]
 pub struct Placement {
     pub direction: &'static str,
     pub row: usize,
@@ -32,14 +34,14 @@ pub struct Board {
     rows: usize,
     cols: usize,
     message: String,
-    solution: String,
-    grid: Vec<Vec<char>>,
+    pub solution: String,
+    pub grid: Vec<Vec<char>>,
     words: HashSet<String>
 }
 
 impl Board {
     pub fn new(rows: usize, cols: usize, message: String) -> Self {
-        let solution = message.to_lowercase().chars().filter(|c| c.is_alphabetic()).collect();
+        let solution = message.to_uppercase().chars().filter(|c| c.is_alphabetic()).collect();
         Board {
             cols, rows,
             message, solution,

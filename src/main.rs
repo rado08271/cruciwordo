@@ -2,15 +2,65 @@ mod board;
 mod dictionary;
 
 use std::cmp::max;
+use axum::{extract, Json, Router};
+use axum::http::{StatusCode};
+use axum::response::IntoResponse;
+use axum::routing::{get, post};
+use serde_json::{json, Value};
+use serde::Deserialize;
+use serde::Serialize;
 use crate::board::{Board, Placement};
+use tower_http::trace::TraceLayer;
 use crate::dictionary::Dictionary;
+use nanoid::nanoid;
+use chrono::prelude::*;
 
-fn main() {
-    let rows = 5;
-    let cols = 5;
-    let message = "This is long?".to_string();
+#[derive(Serialize)]
+struct CruciWordPuzzle {
+    id: String,
+    created_date: String,
+    rows: usize,
+    cols: usize,
+    original_message: String,
+    solution: String,
+    grid: Vec<Vec<char>>,
+    history: Vec<Placement>
+}
 
-    let mut board: Board = Board::new(rows, cols, message);
+#[derive(Deserialize,)]
+struct Params {
+    rows: usize,
+    cols: usize,
+    message: String
+}
+
+async fn not_found() -> (StatusCode, Json<serde_json::Value>) {
+    (
+        StatusCode::NOT_FOUND,
+        Json(json!({
+            "get_board": "/api/{board_id}",
+            "create_board": "/api/g"
+        }))
+    )
+}
+
+async fn get_board_by_id (
+    extract::Path(board_id): extract::Path<String>
+) -> (StatusCode, Json<Value>) {
+
+    (
+        StatusCode::OK,
+        Json((json!({"Status": "Not yet implemented"})))
+    )
+}
+
+async fn generate_new_board (
+    extract::Json(
+        Params {rows, cols, message}
+    ): extract::Json<Params>
+) -> (StatusCode, Json<CruciWordPuzzle>) {
+
+    let mut board: Board = Board::new(rows, cols, message.clone());
     let mut dictionary: Dictionary = Dictionary::from_file("./res/en.dr".to_string(), max(rows, cols));
     let mut placements: Vec<Placement> = Vec::new();
 
@@ -23,8 +73,32 @@ fn main() {
         }
     }
 
-    board.print();
-    placements.iter().for_each(|p| println!("{}. word {} at R{}C{} in D:{}", p.step, p.word, p.row, p.col, p.direction));
+    let result_board: CruciWordPuzzle = CruciWordPuzzle {
+        id: nanoid!(10, &nanoid::alphabet::SAFE),
+        created_date: Utc::now().to_rfc3339(),
+        history: placements,
+        original_message: message.clone(),
+        grid: board.grid,
+        solution: board.solution,
+        rows, cols
+    };
 
-    println!("🏆 Board is now ready");
+    (
+        StatusCode::OK,
+        Json((result_board))
+    )
+}
+
+#[tokio::main]
+async fn main() {
+
+    let app = Router::new()
+        .route("/api/{board_id}", get(get_board_by_id))
+        .route("/api/g", post(generate_new_board))
+        .fallback(not_found)
+        .layer(TraceLayer::new_for_http())
+    ;
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+    axum::serve(listener, app).await.unwrap();
 }

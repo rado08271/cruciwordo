@@ -9,3 +9,10 @@ strum = "0.17.1"
 strum_macros = "0.17.1"
 lazy_static = "1.4.0"
 rand = "0.7.3"
+axum = "0.8.1"
+tokio = { version = "1.43.0", features = ["rt-multi-thread"] }
+serde_json = "1.0.135"
+tower-http = { version = "0.6.2", features = ["trace"] }
+serde = { version = "1.0.217", features = ["derive"] }
+nanoid = "0.4.0"
+chrono = "0.4.39"
