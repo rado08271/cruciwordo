@@ -171,14 +171,4 @@ impl Board {
 
         return None;
     }
-
-    pub fn print(&self) {
-        for r in 0..self.rows {
-            for c in 0..self.cols {
-                let cell_char = self.grid[r][c];
-                print!("[{}{}] {}\t", r, c, cell_char);
-            }
-            println!();
-        }
-    }
 }
