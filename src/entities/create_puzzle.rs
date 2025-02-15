@@ -37,11 +37,11 @@ pub async fn generate_new_board (
     }
 
     let grid_string: String = board.grid.iter()
-        .map(|r| r.iter().map(|c| format!("{}|", c)).collect::<String>())
-        .fold(String::from(""), |data, r| format!("{}+{}", r, data));
+        .map(|r| r.iter().map(|c| format!("{}", c)).collect::<String>())
+        .rfold(String::from(""), |data, r| format!("{}{}", r, data));
 
     let history_sequences = placements.iter().map(|p|
-        format!("{}|{}|{}|{}|{}", p.step, p.word,p.col,p.row,p.direction)
+        format!("{}|{}|{}|{}|{}", p.step, p.word,p.row,p.col,p.direction)
     ).collect::<Vec<String>>();
 
     let board_id = nanoid!(10, &nanoid::alphabet::SAFE);
