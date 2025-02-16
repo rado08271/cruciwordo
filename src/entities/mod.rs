@@ -9,6 +9,8 @@ pub fn get_database () -> ClientResult<Connection> {
     let SKYTABLE_DATABASE_ROOT_HOST: String = std::env::var("SKYTABLE_DATABASE_ROOT_HOST").expect("SKYTABLE_DATABASE_ROOT_HOST must be set");
     let SKYTABLE_DATABASE_ROOT_PORT: u16  = std::env::var("SKYTABLE_DATABASE_ROOT_PORT").expect("SKYTABLE_DATABASE_ROOT_PORT must be set").parse::<u16>().expect("Cannot parse SKYTABLE_DATABASE_ROOT_PORT to number");
 
+    println!("s://{}:{}@{}:{}",SKYTABLE_DATABASE_ROOT_USER, SKYTABLE_DATABASE_ROOT_PASS, SKYTABLE_DATABASE_ROOT_HOST, SKYTABLE_DATABASE_ROOT_PORT);
+
     let mut db = Config::new(
         SKYTABLE_DATABASE_ROOT_HOST.as_str(),
         SKYTABLE_DATABASE_ROOT_PORT,
