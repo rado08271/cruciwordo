@@ -3,6 +3,7 @@ mod dictionary;
 mod entities;
 
 use std::any::Any;
+use std::error::Error;
 use std::fmt::Debug;
 use std::process::Termination;
 use axum::{Json, Router};
@@ -42,6 +43,16 @@ fn initialize_db() {
 
     let mut db_conn = get_database();
     let pipe_result = db_conn.unwrap().execute_pipeline(&init_database);
+
+    if (pipe_result.is_err()) {
+        let pipe_result_err = pipe_result.err();
+        if (pipe_result_err.is_some()) {
+            let error = pipe_result_err.unwrap().source().unwrap();
+            println!("Error is string {} desc {}", error.to_string(), error.description());
+        }
+    } else {
+        println!("is OK")
+    }
 }
 
 #[tokio::main]
