@@ -2,15 +2,14 @@ mod board;
 mod dictionary;
 mod entities;
 
-use std::any::Any;
 use std::error::Error;
 use std::fmt::Debug;
 use std::process::Termination;
 use axum::{Json, Router};
-use axum::http::{StatusCode};
+use axum::http::{Method, StatusCode};
 use axum::routing::{get, post};
 use tower_http::trace::TraceLayer;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use chrono::prelude::*;
 use dotenv::dotenv;
 use serde_json::json;
@@ -64,12 +63,18 @@ async fn main() {
         initialize_db();
     }
 
+    let cors_layer_restrictions = CorsLayer::new()
+        .allow_headers(Any)
+        .allow_methods([Method::POST, Method::GET])
+        .allow_origin(AllowOrigin::mirror_request())
+        .allow_private_network(true);
+
     let app = Router::new()
         .route("/api/{board_id}", get(get_board_by_id))
         .route("/api/g", post(generate_new_board))
         .fallback(not_found)
         .layer(TraceLayer::new_for_http())
-        .layer(CorsLayer::permissive())
+        .layer(cors_layer_restrictions)
     ;
     let listener = tokio::net::TcpListener::bind("0.0.0.0:10000").await.unwrap();
 
