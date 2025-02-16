@@ -31,11 +31,11 @@ async fn not_found() -> (StatusCode, Json<serde_json::Value>) {
 
 fn initialize_db() {
 
-    let mut create_space = query!(
+    let create_space = query!(
         "CREATE SPACE IF NOT EXISTS cruciwordo"
     );
 
-    let mut create_model = query!(
+    let create_model = query!(
         "CREATE MODEL IF NOT EXISTS cruciwordo.puzzle (primary id: string, created_date: string, rows: uint64, cols: uint64, original_message: string, solution: string, grid: string, history: list {type: string})"
     );
 
@@ -47,7 +47,7 @@ fn initialize_db() {
     if (pipe_result.is_err()) {
         let pipe_result_err = pipe_result.err();
         if (pipe_result_err.is_some()) {
-            let error = pipe_result_err.unwrap().source().unwrap();
+            let error = pipe_result_err.unwrap();
             println!("Error is string {}", error.to_string());
         }
     } else {
