@@ -56,7 +56,7 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
     ;
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:443").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:10000").await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
 }
