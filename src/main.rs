@@ -66,7 +66,11 @@ async fn main() {
     let cors_layer_restrictions = CorsLayer::new()
         .allow_headers(Any)
         .allow_methods([Method::POST, Method::GET])
-        .allow_origin(AllowOrigin::mirror_request())
+        .allow_origin([
+            "http://localhost:10000".parse().unwrap(),
+            "http://0.0.0.0:10000".parse().unwrap(),
+            "https://cruciwordo.onrender.com".parse().unwrap(),
+        ])
         .allow_private_network(true);
 
     let app = Router::new()
