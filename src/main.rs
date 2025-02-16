@@ -41,14 +41,14 @@ fn initialize_db() {
 
     let init_database = Pipeline::new().add(&create_space).add(&create_model);
 
-    let mut db_conn = get_database();
+    let db_conn = get_database();
     let pipe_result = db_conn.unwrap().execute_pipeline(&init_database);
 
     if (pipe_result.is_err()) {
         let pipe_result_err = pipe_result.err();
         if (pipe_result_err.is_some()) {
             let error = pipe_result_err.unwrap().source().unwrap();
-            println!("Error is string {} desc {}", error.to_string(), error.description());
+            println!("Error is string {}", error.to_string());
         }
     } else {
         println!("is OK")
