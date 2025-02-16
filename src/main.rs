@@ -42,6 +42,7 @@ fn initialize_db() {
     let init_database = Pipeline::new().add(&create_space).add(&create_model);
 
     let db_conn = get_database();
+
     let pipe_result = db_conn.unwrap().execute_pipeline(&init_database);
 
     if (pipe_result.is_err()) {
@@ -58,7 +59,10 @@ fn initialize_db() {
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    initialize_db();
+    let init_database = std::env::var("SKYTABLE_INIT_DATABASE");
+    if init_database.is_ok() && init_database.unwrap().parse::<bool>() == Ok(true) {
+        initialize_db();
+    }
 
     let app = Router::new()
         .route("/api/{board_id}", get(get_board_by_id))
