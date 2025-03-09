@@ -1,23 +1,8 @@
+use types::{Board, Direction, Placement};
+
 use std::collections::HashSet;
 use rand::prelude::SliceRandom;
 use rand::{Rng, thread_rng};
-use serde::Serialize;
-
-#[derive(Serialize)]
-pub struct Placement {
-    pub direction: &'static str,
-    pub row: usize,
-    pub col: usize,
-    pub word: String,
-    pub step: usize
-}
-
-#[derive(Copy, Clone)]
-pub struct Direction {
-    x_dir: isize,
-    y_dir: isize,
-    pub dbg_name: &'static str
-}
 
 const DIRECTIONS: [Direction; 8] = [
     Direction {y_dir: -1, x_dir: -1, dbg_name: "NW"},   // NW
@@ -30,14 +15,6 @@ const DIRECTIONS: [Direction; 8] = [
     Direction {y_dir:  1, x_dir:  1, dbg_name: "SE"},   // SE
 ];
 
-pub struct Board {
-    rows: usize,
-    cols: usize,
-    message: String,
-    pub solution: String,
-    pub grid: Vec<Vec<char>>,
-    words: HashSet<String>
-}
 
 impl Board {
     pub fn new(rows: usize, cols: usize, message: String) -> Self {
