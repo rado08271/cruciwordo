@@ -131,7 +131,7 @@ pub fn set_game_finished(reducer_context: &ReducerContext, game_id: String) -> R
 #[reducer]
 pub fn save_word(reducer_context: &ReducerContext, word: String) -> Result<(), String> {
     let dictionary_word = DictionaryDatabaseModel {
-        word: word, language: "en".to_string()
+        word: word, language: "en".to_string(), category: None
     };
     reducer_context.db.dictionary().insert(dictionary_word);
 
