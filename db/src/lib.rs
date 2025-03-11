@@ -1,10 +1,9 @@
 mod puzzle_dao;
 
-use axum::http::StatusCode;
 use serde::Serialize;
 use skytable::{ClientResult, Config, Connection, Pipeline, query};
 use types::Board;
-use crate::puzzle_dao::{board_to_puzzle_dao, create_puzzle_dao, puzzle_dao_to_board, puzzle_dao_to_puzzle_dto, puzzle_dto_to_puzzle_dao, PuzzleDAO};
+use crate::puzzle_dao::{board_to_puzzle_dao,  puzzle_dao_to_board, puzzle_dao_to_puzzle_dto, PuzzleDAO};
 
 pub fn initialize_db() {
 

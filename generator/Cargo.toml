@@ -4,11 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-clap = "2.33.0"
-strum = "0.17.1"
-strum_macros = "0.17.1"
-lazy_static = "1.4.0"
-rand = "0.7.3"
-serde = { version = "1.0.217", features = ["derive"] }
 types = { path = "../types"}
+spacetimedb = "1.0.0"
 
