@@ -4,18 +4,19 @@ use crate::board::BoardTrait;
 use crate::dictionary::Dictionary;
 use spacetimedb::{rand::Rng, log, StdbRng};
 use spacetimedb::rand::prelude::SliceRandom;
+use spacetimedb::rand::random;
 
 mod board;
 mod dictionary;
 
-pub fn generate_board(rows: usize, cols: usize, message: String) -> Board {
+pub fn generate_board(rows: usize, cols: usize, message: String, mut number_rng: &StdbRng) -> Board {
     let mut board: Board = Board::new(rows, cols, message.clone());
     let mut dictionary: Dictionary = Dictionary::from_file("./res/en.dr".to_string(), max(rows, cols));
     let mut placements: Vec<Placement> = Vec::new();
 
     while !board.is_filled() {
-        let random_word = dictionary.get_random_word();
-        let valid_placement = board.place_word_on_board(random_word);
+        let random_word = dictionary.get_random_word(number_rng);
+        let valid_placement = board.place_word_on_board(random_word, number_rng);
 
         if valid_placement.is_some() {
             placements.push(valid_placement.unwrap());
@@ -61,7 +62,7 @@ pub fn generate_random_id(length: usize, mut number_rng: &StdbRng) -> String {
 
     for i in 0..length {
         let random_character = SAFE.choose(&mut number_rng);
-        if (random_character.is_some()) {
+        if random_character.is_some() {
             generated_id.push(random_character.unwrap().clone());
         }
     }
