@@ -104,43 +104,105 @@ pub fn generate_new_board(reducer_context: &ReducerContext, rows: u8, cols: u8, 
     return Ok(());
 }
 
-// #[reducer]
+#[reducer]
 pub fn join_game(reducer_context: &ReducerContext, board_id: String) -> Result<(), String> {
     let board_id_played_by_index: spacetimedb::RangedIndex<_, (String, Identity), _> = reducer_context.db.game_session().board_id_played_by();
 
-    // Receive iterator with our results
-    let games_iterator = board_id_played_by_index.filter((board_id.as_str(), reducer_context.sender));
+    let mut games_iterator = board_id_played_by_index.filter((board_id.as_str(), reducer_context.sender));
 
-    // Check if game already exists if not we should create a game
-    if games_iterator.count() == 0 {
-        let initial_game_session_model = GameSessionDatabaseModel {
-            id: format!("{}-{}", board_id.clone(), reducer_context.sender.to_string()),
-            board_id: board_id.clone(),
-            started_date: reducer_context.timestamp,
-            played_by: reducer_context.sender,
-            finished: false,
-            is_online: true,
-            found_words: String::from(""),
-        };
+    // Check if game already exists if not we should create a game, otherwise just set is_online to true
+    match games_iterator.nth(1) {
+        Some(game_session) => {
+            reducer_context.db.game_session().id().update(GameSessionDatabaseModel {
+                is_online: true, ..game_session
+            });
+        },
+        None => {
+            let initial_game_session_model = GameSessionDatabaseModel {
+                id: format!("{}-{}", board_id.clone(), reducer_context.sender.to_string()),
+                board_id: board_id.clone(),
+                started_date: reducer_context.timestamp,
+                played_by: reducer_context.sender,
+                finished: false,
+                is_online: true,
+                found_words: String::from(""),
+            };
 
-        reducer_context.db.game_session().insert(initial_game_session_model);
+            reducer_context.db.game_session().insert(initial_game_session_model);
+        }
     }
 
-    return Ok(())
+    return Ok(());
 }
 
-// #[reducer]
-// pub fn set_game_finished(reducer_context: &ReducerContext, game_id: String) -> Result<(), String> {
-//     if let Some(game) = reducer_context.db.game().id().find(game_id.clone()) {
-//         reducer_context.db.game().id().update(GameDatabaseModel {
-//             finished: true,
-//             ..game
-//         });
-//         return Ok(())
-//     } else {
-//         return Err(format!("The game with id '{}' was not found!", game_id).clone());
-//     }
-// }
+#[reducer]
+pub fn word_is_found(reducer_context: &ReducerContext, board_id: String, word: String) -> Result<(), String> {
+    let board_id_played_by_index: spacetimedb::RangedIndex<_, (String, Identity), _> = reducer_context.db.game_session().board_id_played_by();
+
+    let mut games_iterator = board_id_played_by_index.filter((board_id.as_str(), reducer_context.sender));
+
+    match games_iterator.nth(1) {
+        Some(game_session) => {
+            let word_id: String = format!("{}-{}", board_id, word);
+
+            if let Some(word_model) = reducer_context.db.word().id().find(word_id) {
+                let mut words_to_concat: String = game_session.found_words;
+
+                words_to_concat.push_str(format!("{}|", word_model.word).as_str());
+                reducer_context.db.game_session().id().update(GameSessionDatabaseModel {
+                    found_words: words_to_concat, ..game_session
+                });
+            } else {
+                return Err(format!("Could not find the word {} on board {}!", word, board_id))
+            }
+        },
+        None => {
+            return Err(
+                format!("Your session might have changes! Game session was not started for this Identity on board: {}", board_id.clone())
+            )
+        }
+    }
+
+    return Ok(());
+}
+
+#[reducer]
+pub fn close_session(reducer_context: &ReducerContext, board_id: String) -> Result<(), String> {
+    let board_id_played_by_index: spacetimedb::RangedIndex<_, (String, Identity), _> = reducer_context.db.game_session().board_id_played_by();
+
+    let mut games_iterator = board_id_played_by_index.filter((board_id.as_str(), reducer_context.sender));
+
+    match games_iterator.nth(1) {
+        Some(game_session) => {
+            reducer_context.db.game_session().id().update(GameSessionDatabaseModel {
+                is_online: false, ..game_session
+            });
+        }
+        None => {
+            return Err(
+                format!("Your session might have changes! Game session was not started for this Identity on board: {}", board_id.clone())
+            );
+        }
+    }
+
+    return Ok(());
+}
+
+#[reducer]
+pub fn finish_game(reducer_context: &ReducerContext, board_id: String) -> Result<(), String> {
+    let board_id_played_by_index: spacetimedb::RangedIndex<_, (String, Identity), _> = reducer_context.db.game_session().board_id_played_by();
+
+    let games_iterator = board_id_played_by_index.filter(board_id.as_str());
+
+    // if anyone finishes the game we should stop all game
+    for game_session in games_iterator {
+        reducer_context.db.game_session().id().update(GameSessionDatabaseModel {
+            finished: true, ..game_session
+        });
+    }
+
+    return Ok(());
+}
 
 #[reducer]
 pub fn save_word(reducer_context: &ReducerContext, word: String) -> Result<(), String> {
@@ -149,6 +211,5 @@ pub fn save_word(reducer_context: &ReducerContext, word: String) -> Result<(), S
     };
     reducer_context.db.dictionary().insert(dictionary_word);
 
-    Ok(())
+    return Ok(());
 }
-
