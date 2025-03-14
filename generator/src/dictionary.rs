@@ -10,7 +10,7 @@ pub struct Dictionary {
 
 impl Dictionary {
     pub fn from_file(file_path: String, max_word_length: usize) -> Self {
-        let mut items: Vec<String> = std::fs::read_to_string(file_path)
+        let items: Vec<String> = std::fs::read_to_string(file_path)
             .unwrap()  // panic on possible file-reading errors
             .lines()  // split the string into an iterator of string slices
             .map(String::from)  // make each slice into a string
@@ -27,7 +27,7 @@ impl Dictionary {
     }
 
     pub fn from_words(items: Vec<String>, max_word_length: usize, mut rng: &StdbRng) -> Self {
-        let mut filtered_items: Vec<String> = items.iter()
+        let filtered_items: Vec<String> = items.iter()
             .map(String::from)
             .filter(|s| s.len() >= MIN_WORD_LENGTH && s.len() <= max_word_length)
             .map(|s| s.to_uppercase())
@@ -40,7 +40,7 @@ impl Dictionary {
         };
     }
 
-    pub fn iterate(&mut self) -> IterMut<'_, String> {
+    pub fn _iterate(&mut self) -> IterMut<'_, String> {
         return self.words.iter_mut()
     }
 

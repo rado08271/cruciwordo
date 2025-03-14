@@ -62,7 +62,7 @@ impl BoardTrait for Board {
         return items;
     }
 
-    fn place_word_on_board(&mut self, word: String, mut rng: &StdbRng) -> Option<Placement> {
+    fn place_word_on_board(&mut self, word: String, rng: &StdbRng) -> Option<Placement> {
         let (row, col) = self.get_random_cell(rng);
         // FIXME: We should ensure that word is not part of solution - this may be problem if solution 'stable' will be placed in allowed direction fully or partially and words like 'table, able' might fit there
         let o_direction = self.word_fits_board_direction(row, col, word.clone(), rng);

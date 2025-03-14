@@ -2,14 +2,13 @@ use std::cmp::max;
 use types::{Board, Placement};
 use crate::board::BoardTrait;
 use crate::dictionary::Dictionary;
-use spacetimedb::{rand::Rng, log, StdbRng};
+use spacetimedb::{StdbRng};
 use spacetimedb::rand::prelude::SliceRandom;
-use spacetimedb::rand::random;
 
 mod board;
 mod dictionary;
 
-pub fn generate_board(rows: usize, cols: usize, message: String, mut number_rng: &StdbRng) -> Board {
+pub fn generate_board(rows: usize, cols: usize, message: String, number_rng: &StdbRng) -> Board {
     let mut board: Board = Board::new(rows, cols, message.clone());
     let mut dictionary: Dictionary = Dictionary::from_file("./res/en.dr".to_string(), max(rows, cols));
     let mut placements: Vec<Placement> = Vec::new();
@@ -26,17 +25,10 @@ pub fn generate_board(rows: usize, cols: usize, message: String, mut number_rng:
     return board;
 }
 
-pub fn generate_board_with_dictionary(rows: usize, cols: usize, message: String, words: &Vec<String>, mut number_rng: &StdbRng) -> Board {
+pub fn generate_board_with_dictionary(rows: usize, cols: usize, message: String, words: &Vec<String>, number_rng: &StdbRng) -> (Board, Vec<Placement>) {
     let mut board: Board = Board::new(rows, cols, message.clone());
     let mut dictionary: Dictionary = Dictionary::from_words(words.clone(), max(rows, cols), number_rng);
     let mut placements: Vec<Placement> = Vec::new();
-
-
-    for i in 0..20 {
-        log::debug!("generated number is {:?}", number_rng.gen_range(0..100));
-        let random_word =  dictionary.get_random_word(number_rng);
-        log::debug!("Random word is {:?}", random_word);
-    }
 
     while !board.is_filled() {
         let random_word = dictionary.get_random_word(number_rng);
@@ -47,7 +39,7 @@ pub fn generate_board_with_dictionary(rows: usize, cols: usize, message: String,
         }
     }
 
-    return board;
+    return (board, placements);
 }
 
 pub fn generate_random_id(length: usize, mut number_rng: &StdbRng) -> String {
@@ -60,7 +52,7 @@ pub fn generate_random_id(length: usize, mut number_rng: &StdbRng) -> String {
 
     let mut generated_id: String = String::new();
 
-    for i in 0..length {
+    for _i in 0..length {
         let random_character = SAFE.choose(&mut number_rng);
         if random_character.is_some() {
             generated_id.push(random_character.unwrap().clone());
